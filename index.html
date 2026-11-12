@@ -40,7 +40,19 @@ button{width:100%;padding:12px;background:#1e40af;color:#fff;border:0;border-rad
 </head>
 <body>
 <div class="no-print">
-<div class="top"><h1>📮 Post Agency Hisab</h1><p>Customer • Edit • Print PDF • Date Wise</p></div>
+<div class="top"><h1>📮 Post Agency Hisab</h1><p>Customer • Edit • Print • Din ka Report</p></div>
+
+<!-- DIN KA REPORT BUTTON -->
+<div class="box" style="border:2px solid #16a34a;background:#f0fdf4">
+<h3 style="margin:0">📊 Pure Din Ka Report</h3>
+<p style="font-size:12px;color:#666;margin:4px 0">Aaj ya kisi bhi din ka pura hisab PDF me nikalo</p>
+<label>Kis Din Ka Report Chahiye?</label>
+<input id="reportDate" type="date">
+<div class="flex" style="margin-top:6px">
+<button onclick="printDayReport()" style="background:#16a34a">📄 Aaj / Is Date Ka Report PDF</button>
+<button onclick="printAllReport()" style="background:#111827">📄 Sab Customer Ka Full Report</button>
+</div>
+</div>
 
 <div class="box" style="border:2px solid #f59e0b">
 <h3 style="margin:0">💰 Mera Personal Paisa</h3>
@@ -74,10 +86,8 @@ button{width:100%;padding:12px;background:#1e40af;color:#fff;border:0;border-rad
 <div id="list"></div>
 </div>
 
-<!-- PRINT AREA -->
 <div id="printArea"></div>
 
-<!-- PAY MODAL -->
 <div id="payModal" class="modal"><div class="inner">
 <h3 id="payTitle" style="margin:0 0 10px">Paisa Bhara</h3>
 <label>Kitna Paisa Bhara? *</label><input id="payAmt" type="number" placeholder="Jaise 100000">
@@ -86,7 +96,6 @@ button{width:100%;padding:12px;background:#1e40af;color:#fff;border:0;border-rad
 <div class="flex" style="margin-top:10px"><button onclick="savePay()" style="background:#16a34a">✅ Save Karo</button><button onclick="closePay()" style="background:#e5e7eb;color:#000">Cancel</button></div>
 </div></div>
 
-<!-- EDIT CUSTOMER MODAL -->
 <div id="editModal" class="modal"><div class="inner">
 <h3 style="margin:0 0 10px">✏️ Customer Edit Karo</h3>
 <label>Naam</label><input id="eName">
@@ -102,6 +111,7 @@ button{width:100%;padding:12px;background:#1e40af;color:#fff;border:0;border-rad
 let data = JSON.parse(localStorage.getItem('postAgency')||'[]');
 let myAcc = JSON.parse(localStorage.getItem('myAcc')||'[]');
 let curId = null, editId=null;
+document.getElementById('reportDate').value = new Date().toISOString().split('T')[0];
 function save(){ localStorage.setItem('postAgency', JSON.stringify(data)); localStorage.setItem('myAcc', JSON.stringify(myAcc)); render(); }
 function addMyAcc(){ let n=document.getElementById('accName').value.trim(); let b=parseInt(document.getElementById('accBal').value); if(!n||!b){alert('Naam aur Paisa dalo');return;} myAcc.unshift({id:Date.now(),name:n,bal:b}); document.getElementById('accName').value='';document.getElementById('accBal').value=''; save(); }
 function myPlus(id){ let a=prompt('Kitna Jama Karna Hai?'); if(!a) return; let x=myAcc.find(v=>v.id==id); x.bal+=parseInt(a); save(); }
@@ -114,7 +124,6 @@ function addCust(){
   data.unshift({id:Date.now(),name,accNo,accType,phone,total,daily,payments:[]});
   ['name','accNo','phone','total','daily'].forEach(i=>document.getElementById(i).value=''); save(); alert(name+' add ho gaya');
 }
-// PAY
 function openPay(id){ curId=id; let c=data.find(x=>x.id==id); document.getElementById('payTitle').innerText = c.name + ' - Paisa Bhara'; document.getElementById('payAmt').value = c.daily || ''; document.getElementById('payDate').value = new Date().toISOString().split('T')[0]; document.getElementById('payNote').value = ''; document.getElementById('payModal').style.display='flex'; }
 function closePay(){ document.getElementById('payModal').style.display='none'; }
 function savePay(){
@@ -123,7 +132,6 @@ function savePay(){
   let c=data.find(x=>x.id==curId); let dt = new Date(d+'T12:00:00'); let dateStr = dt.toLocaleDateString('hi-IN',{day:'2-digit',month:'short',year:'numeric'});
   c.payments.unshift({amt, date: dateStr, rawDate: d, note}); c.payments.sort((a,b)=> b.rawDate.localeCompare(a.rawDate)); closePay(); save();
 }
-// EDIT CUSTOMER
 function openEdit(id){ editId=id; let c=data.find(x=>x.id==id); document.getElementById('eName').value=c.name; document.getElementById('eAccNo').value=c.accNo; document.getElementById('eAccType').value=c.accType; document.getElementById('ePhone').value=c.phone; document.getElementById('eTotal').value=c.total; document.getElementById('eDaily').value=c.daily; document.getElementById('editModal').style.display='flex'; }
 function closeEdit(){ document.getElementById('editModal').style.display='none'; }
 function saveEdit(){
@@ -131,18 +139,16 @@ function saveEdit(){
   c.name=document.getElementById('eName').value.trim(); c.accNo=document.getElementById('eAccNo').value.trim(); c.accType=document.getElementById('eAccType').value; c.phone=document.getElementById('ePhone').value.trim().replace(/\D/g,'').slice(-10); c.total=parseInt(document.getElementById('eTotal').value); c.daily=parseInt(document.getElementById('eDaily').value)||0;
   closeEdit(); save(); alert('Customer Update Ho Gaya');
 }
-// DELETE
 function delPay(cid, idx){ if(!confirm('Ye wali entry galat hai? Delete kar du?')) return; let c=data.find(x=>x.id==cid); c.payments.splice(idx,1); save(); }
 function delCust(id){ if(confirm('Poora Customer delete karu?')){ data=data.filter(x=>x.id!=id); save(); } }
 function editPay(cid, idx){
   let c=data.find(x=>x.id==cid); let p=c.payments[idx];
   let newAmt = prompt('Sahi Amount kitna hai?', p.amt); if(!newAmt) return;
-  let newDate = prompt('Sahi Date kya hai? YYYY-MM-DD me likho, jaise 2026-11-10', p.rawDate||'');
+  let newDate = prompt('Sahi Date kya hai? YYYY-MM-DD me likho', p.rawDate||'');
   p.amt=parseInt(newAmt);
   if(newDate){ p.rawDate=newDate; let dt=new Date(newDate+'T12:00:00'); p.date=dt.toLocaleDateString('hi-IN',{day:'2-digit',month:'short',year:'numeric'}); }
   c.payments.sort((a,b)=> b.rawDate.localeCompare(a.rawDate)); save();
 }
-// PRINT PDF
 function printCust(id){
   let c=data.find(x=>x.id==id);
   let paid=c.payments.reduce((s,p)=>s+p.amt,0); let left=c.total-paid;
@@ -155,6 +161,44 @@ function printCust(id){
   <h3>Date Wise Jama</h3>
   <table style="width:100%;border-collapse:collapse"><tr><th style="border:1px solid #000;padding:8px">#</th><th style="border:1px solid #000;padding:8px">Date</th><th style="border:1px solid #000;padding:8px">Note</th><th style="border:1px solid #000;padding:8px">Amount</th></tr>${rows||'<tr><td colspan=4 style="border:1px solid #000;padding:8px">Abhi kuch nahi bhara</td></tr>'}</table>
   <div style="margin-top:30px;display:flex;justify-content:space-between"><span>Customer Sign: ___________</span><span>Agency Sign: ___________</span></div>`;
+  window.print();
+}
+// PURE DIN KA REPORT
+function printDayReport(){
+  let d = document.getElementById('reportDate').value;
+  if(!d){alert('Date select karo');return;}
+  let dateStr = new Date(d+'T12:00:00').toLocaleDateString('hi-IN',{day:'2-digit',month:'long',year:'numeric'});
+  let all = [];
+  data.forEach(c=>{
+    c.payments.forEach(p=>{
+      if(p.rawDate==d){ all.push({name:c.name, accNo:c.accNo, accType:c.accType, phone:c.phone, amt:p.amt, note:p.note||'-', date:p.date}); }
+    });
+  });
+  let totalDay = all.reduce((s,x)=>s+x.amt,0);
+  let rows = all.map((x,i)=>`<tr><td style="border:1px solid #000;padding:8px">${i+1}</td><td style="border:1px solid #000;padding:8px">${x.name}<br><small>Acc: ${x.accNo} (${x.accType})<br>Mo: ${x.phone}</small></td><td style="border:1px solid #000;padding:8px">${x.note}</td><td style="border:1px solid #000;padding:8px;text-align:right">₹${x.amt.toLocaleString('en-IN')}</td></tr>`).join('');
+  document.getElementById('printArea').innerHTML = `
+  <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px"><h2 style="margin:0">📮 Post Agency - Umbargaon</h2><p style="margin:2px">PURE DIN KA REPORT</p></div>
+  <div style="margin:15px 0;line-height:1.8"><b>Date:</b> ${dateStr}<br><b>Total Customer:</b> ${all.length}<br><b>Aaj Total Jama:</b> <span style="font-size:20px">₹${totalDay.toLocaleString('en-IN')}</span></div>
+  <table style="width:100%;border-collapse:collapse"><tr><th style="border:1px solid #000;padding:8px">#</th><th style="border:1px solid #000;padding:8px;text-align:left">Customer</th><th style="border:1px solid #000;padding:8px">Note</th><th style="border:1px solid #000;padding:8px">Amount</th></tr>
+  ${rows||'<tr><td colspan=4 style="border:1px solid #000;padding:8px;text-align:center">Is din koi paisa nahi bhara</td></tr>'}
+  ${all.length?`<tr><td colspan=3 style="border:1px solid #000;padding:8px;text-align:right"><b>TOTAL</b></td><td style="border:1px solid #000;padding:8px;text-align:right"><b>₹${totalDay.toLocaleString('en-IN')}</b></td></tr>`:''}
+  </table>
+  <div style="margin-top:30px;display:flex;justify-content:space-between"><span>Agency Sign: ___________</span><span>Date: ${dateStr}</span></div>
+  <p style="font-size:12px;color:#666">Ye report ${new Date().toLocaleString('hi-IN')} ko banayi gayi</p>`;
+  window.print();
+}
+// SAB CUSTOMER KA FULL REPORT
+function printAllReport(){
+  let totalGiven=0, totalPaid=0;
+  let rows = data.map((c,i)=>{
+    let paid=c.payments.reduce((s,p)=>s+p.amt,0); let left=c.total-paid; totalGiven+=c.total; totalPaid+=paid;
+    return `<tr><td style="border:1px solid #000;padding:8px">${i+1}</td><td style="border:1px solid #000;padding:8px">${c.name}<br><small>Acc: ${c.accNo} (${c.accType})<br>Mo: ${c.phone}</small></td><td style="border:1px solid #000;padding:8px;text-align:right">₹${c.total.toLocaleString('en-IN')}</td><td style="border:1px solid #000;padding:8px;text-align:right">₹${paid.toLocaleString('en-IN')}</td><td style="border:1px solid #000;padding:8px;text-align:right">₹${left.toLocaleString('en-IN')}</td></tr>`;
+  }).join('');
+  document.getElementById('printArea').innerHTML = `
+  <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px"><h2 style="margin:0">📮 Post Agency - Umbargaon</h2><p style="margin:2px">SAB CUSTOMER KA FULL REPORT</p></div>
+  <div style="margin:15px 0"><b>Date:</b> ${new Date().toLocaleDateString('hi-IN')} | <b>Total Customer:</b> ${data.length} | <b>Total Mila:</b> ₹${totalGiven.toLocaleString('en-IN')} | <b>Total Bhara:</b> ₹${totalPaid.toLocaleString('en-IN')} | <b>Baki:</b> ₹${(totalGiven-totalPaid).toLocaleString('en-IN')}</div>
+  <table style="width:100%;border-collapse:collapse"><tr><th style="border:1px solid #000;padding:8px">#</th><th style="border:1px solid #000;padding:8px;text-align:left">Customer</th><th style="border:1px solid #000;padding:8px">Total Diya</th><th style="border:1px solid #000;padding:8px">Bhara</th><th style="border:1px solid #000;padding:8px">Baki</th></tr>${rows||'<tr><td colspan=5 style="border:1px solid #000;padding:8px">Koi customer nahi</td></tr>'}</table>
+  <div style="margin-top:30px;display:flex;justify-content:space-between"><span>Agency Sign: ___________</span></div>`;
   window.print();
 }
 function sendWA(id){
