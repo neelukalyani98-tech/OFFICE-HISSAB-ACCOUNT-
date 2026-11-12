@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post Agency - Full Hisab</title>
+<style>
+*{box-sizing:border-box;font-family:Arial}body{margin:0;background:#f1f5f9;padding:12px}
+.top{background:#1e40af;color:#fff;padding:16px;border-radius:14px}
+.top h1{margin:0;font-size:22px}.top p{margin:4px 0 0;opacity:.9}
+.cards{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}.card{flex:1;min-width:140px;background:#fff;padding:12px;border-radius:12px;text-align:center}
+.card b{font-size:18px;display:block}.card span{font-size:11px;color:#666}
+.box{background:#fff;padding:14px;border-radius:12px;margin-bottom:12px}
+input,select{width:100%;padding:11px;margin:6px 0;border:1px solid #ddd;border-radius:8px}
+label{font-size:12px;color:#666;font-weight:bold}
+button{width:100%;padding:12px;background:#1e40af;color:#fff;border:0;border-radius:8px;font-weight:bold;font-size:16px;cursor:pointer}
+.cust{background:#fff;padding:14px;border-radius:12px;margin-bottom:12px}
+.bar{height:10px;background:#e5e7eb;border-radius:20px;overflow:hidden;margin:8px 0}
+.fill{height:100%;background:#16a34a}
+.hist{font-size:13px;background:#f8fafc;padding:8px;border-radius:8px;margin:4px 0;display:flex;justify-content:space-between;align-items:center}
+.del{width:auto;background:#fee2e2;color:#b91c1c;padding:6px 10px;font-size:12px}
+.paybtn{width:auto;background:#16a34a;padding:8px 14px;font-size:13px}
+.wabtn{width:auto;background:#25D366;padding:8px 14px;font-size:13px;color:#fff}
+.editbtn{width:auto;background:#f59e0b;color:#000;padding:8px 12px;font-size:13px}
+.printbtn{width:auto;background:#111827;padding:8px 12px;font-size:13px}
+.flex{display:flex;gap:8px;flex-wrap:wrap}.flex button{flex:1;min-width:120px}
+.myacc{background:#fff;padding:12px;border-radius:12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.smallbtn{width:auto;padding:7px 10px;font-size:12px}
+.green{background:#16a34a}.red{background:#dc2626}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99;align-items:center;justify-content:center;padding:20px}
+.modal .inner{background:#fff;width:100%;max-width:400px;padding:18px;border-radius:14px;max-height:90vh;overflow:auto}
+@media print{
+  body *{visibility:hidden}
+  #printArea, #printArea *{visibility:visible}
+  #printArea{position:absolute;left:0;top:0;width:100%;padding:20px;display:block !important}
+  .no-print{display:none !important}
+}
+#printArea{display:none}
+</style>
+</head>
+<body>
+<div class="no-print">
+<div class="top"><h1>📮 Post Agency Hisab</h1><p>Customer • Edit • Print PDF • Date Wise</p></div>
+
+<div class="box" style="border:2px solid #f59e0b">
+<h3 style="margin:0">💰 Mera Personal Paisa</h3>
+<div style="background:#fef3c7;padding:12px;border-radius:10px;text-align:center;margin:10px 0"><span style="font-size:13px">Total Mera Paisa</span><b id="myTotal" style="font-size:26px;display:block">₹0</b></div>
+<div id="myList"></div>
+<input id="accName" placeholder="Mera Account - Jaise Mera Post SB, Mera SBI Bank">
+<input id="accBal" placeholder="Kitna Paisa Hai? 150000" type="number">
+<button onclick="addMyAcc()" style="background:#f59e0b;color:#000">+ Mera Account Add Karo</button>
+</div>
+
+<div class="cards">
+<div class="card"><b id="tCust">0</b><span>Customer</span></div>
+<div class="card"><b id="tGiven">₹0</b><span>Total Mila</span></div>
+<div class="card"><b id="tPaid">₹0</b><span>Total Bhara</span></div>
+<div class="card"><b id="tLeft">₹0</b><span>Baki</span></div>
+</div>
+
+<div class="box">
+<h3 style="margin:0 0 8px">+ Naya Customer Add Karo</h3>
+<label>Customer ka Naam *</label><input id="name" placeholder="Jaise - Ramesh Patel">
+<label>Account Number *</label><input id="accNo" placeholder="Jaise - 1234567890" type="tel">
+<label>Account Type *</label>
+<select id="accType"><option value="SB">SB - Saving Account</option><option value="RD">RD - Recurring Deposit</option><option value="TD">TD - Time Deposit</option><option value="MIS">MIS - Monthly Income</option><option value="PPF">PPF</option><option value="SSA">SSA - Sukanya</option><option value="Other">Other</option></select>
+<label>Mobile Number *</label><input id="phone" placeholder="WhatsApp Number - 98765 43210" type="tel">
+<label>Total Kitna Deke Gaya? *</label><input id="total" placeholder="Jaise 500000" type="number">
+<label>Roj Kitna Bharna Hai?</label><input id="daily" placeholder="Jaise 50000 ya 100000" type="number">
+<button onclick="addCust()">Customer Add Karo</button>
+</div>
+
+<div class="box"><input id="search" placeholder="🔍 Naam / Account Number / Mobile se dhoondo..." oninput="render()"></div>
+<div id="list"></div>
+</div>
+
+<!-- PRINT AREA -->
+<div id="printArea"></div>
+
+<!-- PAY MODAL -->
+<div id="payModal" class="modal"><div class="inner">
+<h3 id="payTitle" style="margin:0 0 10px">Paisa Bhara</h3>
+<label>Kitna Paisa Bhara? *</label><input id="payAmt" type="number" placeholder="Jaise 100000">
+<label>Kis Date Ko Bhara? *</label><input id="payDate" type="date">
+<label>Note (optional)</label><input id="payNote" placeholder="Jaise - Receipt No.">
+<div class="flex" style="margin-top:10px"><button onclick="savePay()" style="background:#16a34a">✅ Save Karo</button><button onclick="closePay()" style="background:#e5e7eb;color:#000">Cancel</button></div>
+</div></div>
+
+<!-- EDIT CUSTOMER MODAL -->
+<div id="editModal" class="modal"><div class="inner">
+<h3 style="margin:0 0 10px">✏️ Customer Edit Karo</h3>
+<label>Naam</label><input id="eName">
+<label>Account Number</label><input id="eAccNo">
+<label>Account Type</label><select id="eAccType"><option value="SB">SB - Saving Account</option><option value="RD">RD</option><option value="TD">TD</option><option value="MIS">MIS</option><option value="PPF">PPF</option><option value="SSA">SSA</option><option value="Other">Other</option></select>
+<label>Mobile Number</label><input id="ePhone">
+<label>Total Kitna Diya</label><input id="eTotal" type="number">
+<label>Roj Kitna Bharna</label><input id="eDaily" type="number">
+<div class="flex" style="margin-top:10px"><button onclick="saveEdit()" style="background:#f59e0b;color:#000">✅ Update Karo</button><button onclick="closeEdit()" style="background:#e5e7eb;color:#000">Cancel</button></div>
+</div></div>
+
+<script>
+let data = JSON.parse(localStorage.getItem('postAgency')||'[]');
+let myAcc = JSON.parse(localStorage.getItem('myAcc')||'[]');
+let curId = null, editId=null;
+function save(){ localStorage.setItem('postAgency', JSON.stringify(data)); localStorage.setItem('myAcc', JSON.stringify(myAcc)); render(); }
+function addMyAcc(){ let n=document.getElementById('accName').value.trim(); let b=parseInt(document.getElementById('accBal').value); if(!n||!b){alert('Naam aur Paisa dalo');return;} myAcc.unshift({id:Date.now(),name:n,bal:b}); document.getElementById('accName').value='';document.getElementById('accBal').value=''; save(); }
+function myPlus(id){ let a=prompt('Kitna Jama Karna Hai?'); if(!a) return; let x=myAcc.find(v=>v.id==id); x.bal+=parseInt(a); save(); }
+function myMinus(id){ let a=prompt('Kitna Nikala?'); if(!a) return; let x=myAcc.find(v=>v.id==id); x.bal-=parseInt(a); save(); }
+function myDel(id){ if(confirm('Ye account delete karu?')){ myAcc=myAcc.filter(v=>v.id!=id); save(); } }
+function addCust(){
+  let name=document.getElementById('name').value.trim(); let accNo=document.getElementById('accNo').value.trim(); let accType=document.getElementById('accType').value;
+  let phone=document.getElementById('phone').value.trim().replace(/\D/g,'').slice(-10); let total=parseInt(document.getElementById('total').value); let daily=parseInt(document.getElementById('daily').value)||0;
+  if(!name||!accNo||!phone||!total){alert('Naam, Account Number, Mobile aur Total Amount - sab dalo');return;}
+  data.unshift({id:Date.now(),name,accNo,accType,phone,total,daily,payments:[]});
+  ['name','accNo','phone','total','daily'].forEach(i=>document.getElementById(i).value=''); save(); alert(name+' add ho gaya');
+}
+// PAY
+function openPay(id){ curId=id; let c=data.find(x=>x.id==id); document.getElementById('payTitle').innerText = c.name + ' - Paisa Bhara'; document.getElementById('payAmt').value = c.daily || ''; document.getElementById('payDate').value = new Date().toISOString().split('T')[0]; document.getElementById('payNote').value = ''; document.getElementById('payModal').style.display='flex'; }
+function closePay(){ document.getElementById('payModal').style.display='none'; }
+function savePay(){
+  let amt=parseInt(document.getElementById('payAmt').value); let d=document.getElementById('payDate').value; let note=document.getElementById('payNote').value.trim();
+  if(!amt||!d){alert('Paisa aur Date dono dalo');return;}
+  let c=data.find(x=>x.id==curId); let dt = new Date(d+'T12:00:00'); let dateStr = dt.toLocaleDateString('hi-IN',{day:'2-digit',month:'short',year:'numeric'});
+  c.payments.unshift({amt, date: dateStr, rawDate: d, note}); c.payments.sort((a,b)=> b.rawDate.localeCompare(a.rawDate)); closePay(); save();
+}
+// EDIT CUSTOMER
+function openEdit(id){ editId=id; let c=data.find(x=>x.id==id); document.getElementById('eName').value=c.name; document.getElementById('eAccNo').value=c.accNo; document.getElementById('eAccType').value=c.accType; document.getElementById('ePhone').value=c.phone; document.getElementById('eTotal').value=c.total; document.getElementById('eDaily').value=c.daily; document.getElementById('editModal').style.display='flex'; }
+function closeEdit(){ document.getElementById('editModal').style.display='none'; }
+function saveEdit(){
+  let c=data.find(x=>x.id==editId);
+  c.name=document.getElementById('eName').value.trim(); c.accNo=document.getElementById('eAccNo').value.trim(); c.accType=document.getElementById('eAccType').value; c.phone=document.getElementById('ePhone').value.trim().replace(/\D/g,'').slice(-10); c.total=parseInt(document.getElementById('eTotal').value); c.daily=parseInt(document.getElementById('eDaily').value)||0;
+  closeEdit(); save(); alert('Customer Update Ho Gaya');
+}
+// DELETE
+function delPay(cid, idx){ if(!confirm('Ye wali entry galat hai? Delete kar du?')) return; let c=data.find(x=>x.id==cid); c.payments.splice(idx,1); save(); }
+function delCust(id){ if(confirm('Poora Customer delete karu?')){ data=data.filter(x=>x.id!=id); save(); } }
+function editPay(cid, idx){
+  let c=data.find(x=>x.id==cid); let p=c.payments[idx];
+  let newAmt = prompt('Sahi Amount kitna hai?', p.amt); if(!newAmt) return;
+  let newDate = prompt('Sahi Date kya hai? YYYY-MM-DD me likho, jaise 2026-11-10', p.rawDate||'');
+  p.amt=parseInt(newAmt);
+  if(newDate){ p.rawDate=newDate; let dt=new Date(newDate+'T12:00:00'); p.date=dt.toLocaleDateString('hi-IN',{day:'2-digit',month:'short',year:'numeric'}); }
+  c.payments.sort((a,b)=> b.rawDate.localeCompare(a.rawDate)); save();
+}
+// PRINT PDF
+function printCust(id){
+  let c=data.find(x=>x.id==id);
+  let paid=c.payments.reduce((s,p)=>s+p.amt,0); let left=c.total-paid;
+  let rows = c.payments.map((p,i)=>`<tr><td>${i+1}</td><td>${p.date}</td><td>${p.note||'-'}</td><td style="text-align:right">₹${p.amt.toLocaleString('en-IN')}</td></tr>`).join('');
+  document.getElementById('printArea').innerHTML = `
+  <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:10px"><h2 style="margin:0">📮 Post Agency - Umbargaon</h2><p style="margin:2px">Customer Hisab Receipt</p></div>
+  <div style="margin:15px 0;line-height:1.8"><b>Naam:</b> ${c.name}<br><b>Account Number:</b> ${c.accNo}<br><b>Account Type:</b> ${c.accType}<br><b>Mobile:</b> ${c.phone}<br><b>Date:</b> ${new Date().toLocaleDateString('hi-IN')}</div>
+  <table style="width:100%;border-collapse:collapse"><tr><th style="border:1px solid #000;padding:8px;text-align:left">Total Diya</th><th style="border:1px solid #000;padding:8px">Bhara</th><th style="border:1px solid #000;padding:8px">Baki</th></tr>
+  <tr><td style="border:1px solid #000;padding:8px">₹${c.total.toLocaleString('en-IN')}</td><td style="border:1px solid #000;padding:8px">₹${paid.toLocaleString('en-IN')}</td><td style="border:1px solid #000;padding:8px">₹${left.toLocaleString('en-IN')}</td></tr></table>
+  <h3>Date Wise Jama</h3>
+  <table style="width:100%;border-collapse:collapse"><tr><th style="border:1px solid #000;padding:8px">#</th><th style="border:1px solid #000;padding:8px">Date</th><th style="border:1px solid #000;padding:8px">Note</th><th style="border:1px solid #000;padding:8px">Amount</th></tr>${rows||'<tr><td colspan=4 style="border:1px solid #000;padding:8px">Abhi kuch nahi bhara</td></tr>'}</table>
+  <div style="margin-top:30px;display:flex;justify-content:space-between"><span>Customer Sign: ___________</span><span>Agency Sign: ___________</span></div>`;
+  window.print();
+}
+function sendWA(id){
+  let c=data.find(x=>x.id==id); let paid=c.payments.reduce((s,p)=>s+p.amt,0); let left=c.total-paid;
+  let hist = c.payments.slice(0,7).map(p=>`• ${p.date} - Rs ${p.amt.toLocaleString('en-IN')}${p.note?' ('+p.note+')':''}`).join('\n');
+  let msg = `Namaste ${c.name} 🙏\n\n📮 Post Agency Hisab\n\nNaam: ${c.name}\nAccount No: ${c.accNo}\nAccount Type: ${c.accType}\nMobile: ${c.phone}\n\nTotal Diya: Rs ${c.total.toLocaleString('en-IN')}\nRoj Bharna Hai: Rs ${c.daily.toLocaleString('en-IN')}\n\n✅ Abhi Tak Bhara: Rs ${paid.toLocaleString('en-IN')}\n⏳ Baki Bharna Hai: Rs ${left.toLocaleString('en-IN')}\n\nDate Wise Jama:\n${hist||'Abhi kuch nahi bhara'}\n\n- Post Agency, Umbargaon`;
+  window.open('https://wa.me/91'+c.phone+'?text='+encodeURIComponent(msg),'_blank');
+}
+function render(){
+  let ml=document.getElementById('myList'); ml.innerHTML=''; let myT=0;
+  myAcc.forEach(a=>{ myT+=a.bal; ml.innerHTML+=`<div class="myacc"><div><b>${a.name}</b><br><small>₹${a.bal.toLocaleString('en-IN')}</small></div><div style="display:flex;gap:5px"><button class="smallbtn green" onclick="myPlus(${a.id})">+ Jama</button><button class="smallbtn red" onclick="myMinus(${a.id})">- Nikala</button><button class="smallbtn" style="background:#fee2e2;color:#b91c1c" onclick="myDel(${a.id})">X</button></div></div>`; });
+  document.getElementById('myTotal').innerText='₹'+myT.toLocaleString('en-IN');
+  let q=document.getElementById('search').value.toLowerCase(); let list=document.getElementById('list'); list.innerHTML=''; let tG=0,tP=0;
+  data.forEach(c=>{
+    if(q && !(c.name.toLowerCase().includes(q) || c.accNo.includes(q) || c.phone.includes(q))) return;
+    let paid = c.payments.reduce((s,p)=>s+p.amt,0); let left = c.total - paid; tG+=c.total; tP+=paid;
+    let per = Math.min(100, Math.round(paid/c.total*100));
+    let hist = c.payments.map((p,i)=>`<div class="hist"><span>📅 ${p.date} • ₹${p.amt.toLocaleString('en-IN')} ${p.note?'<br><small>'+p.note+'</small>':''}</span><div style="display:flex;gap:4px"><button class="del" style="background:#fef3c7;color:#92400e" onclick="editPay(${c.id},${i})">Edit</button><button class="del" onclick="delPay(${c.id},${i})">Delete</button></div></div>`).join('') || '<p style="color:#888;font-size:13px">Abhi kuch nahi bhara</p>';
+    list.innerHTML+=`<div class="cust">
+      <div style="display:flex;justify-content:space-between"><div><b style="font-size:18px">${c.name}</b><br><small>🏦 Account: <b>${c.accNo}</b> • Type: <b>${c.accType}</b><br>📞 Mobile: ${c.phone}</small></div><div style="display:flex;gap:5px"><button class="del" style="background:#fef3c7;color:#92400e" onclick="openEdit(${c.id})">Edit</button><button class="del" onclick="delCust(${c.id})">Delete</button></div></div>
+      <div style="margin-top:10px;font-size:14px">Total Mila: <b>₹${c.total.toLocaleString('en-IN')}</b> • Roj: <b>₹${c.daily.toLocaleString('en-IN')}</b></div>
+      <div class="bar"><div class="fill" style="width:${per}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:14px"><span style="color:green">✅ Bhara: ₹${paid.toLocaleString('en-IN')} (${per}%)</span><span style="color:red;font-weight:bold">Baki: ₹${left.toLocaleString('en-IN')}</span></div>
+      <div class="flex" style="margin-top:10px"><button class="paybtn" onclick="openPay(${c.id})">+ Paisa Bhara</button><button class="wabtn" onclick="sendWA(${c.id})">📱 WhatsApp</button><button class="printbtn" onclick="printCust(${c.id})">🖨️ Print / PDF</button></div>
+      <div style="margin-top:10px"><b>History (Date Wise):</b>${hist}</div>
+    </div>`;
+  });
+  document.getElementById('tCust').innerText=data.length; document.getElementById('tGiven').innerText='₹'+tG.toLocaleString('en-IN'); document.getElementById('tPaid').innerText='₹'+tP.toLocaleString('en-IN'); document.getElementById('tLeft').innerText='₹'+(tG-tP).toLocaleString('en-IN');
+}
+render();
+</script>
+</body>
+</html>
